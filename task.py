@@ -21,9 +21,9 @@ class TaskStatus(Enum):
 
 @dataclass
 class Task:
-    input: str
     operation: str
     job_operation: str
+    input: Optional[str] = None
     # headers: Optional[dict[str,str]]
     headers: Optional[dict]  = None
 

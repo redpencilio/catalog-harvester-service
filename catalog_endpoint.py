@@ -140,7 +140,7 @@ LIMIT 1
     query_res = query(query_string)
     bindings = query_res["results"]["bindings"]
     if not bindings:
-        raise Exception(f"Catalog Endpoint description not found: <{uri}>")
+        raise Exception(f"Catalog Endpoint description not found: <{uri_query}>")
 
     binding = bindings[0]
     catalog_endpoint = from_binding(

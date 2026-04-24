@@ -1,7 +1,7 @@
 from itertools import islice
 from string import Template
 from constants import GRAPH_LOAD_BATCH_SIZE
-from escape_helpers import sparql_escape_uri
+from escape_helpers import sparql_escape_uri, sparql_escape_string
 from sudo_query import query_sudo, update_sudo
 import rdflib
 import dataclasses
@@ -25,6 +25,21 @@ def batched(iterable, n, *, strict=False):
             raise ValueError('batched(): incomplete batch')
         yield batch
 
+def _n3(term):
+    if isinstance(term, rdflib.Literal):
+        if term.datatype == rdflib.URIRef("http://www.opengis.net/ont/geosparql#wktLiteral"):
+            return rdflib.Literal(
+                term.value,
+                datatype=rdflib.namespace.XSD.string
+            ).n3()
+        elif term.language:
+            print(f"{term.value=}")
+            print(f"{term.n3()=}")
+            print(f"{term.normalize()=}")
+            return sparql_escape_string(term.value)
+
+    return term.n3()
+
 # adapted from https://github.com/RDFLib/rdflib/issues/1704
 def store_graph(g: rdflib.Graph, graph_name: str):
     """RDFlib graph to sparql"""
@@ -34,7 +49,7 @@ def store_graph(g: rdflib.Graph, graph_name: str):
         )
         updatequery += f"\nINSERT DATA {{\n\tGRAPH {sparql_escape_uri(graph_name)} {{\n"
         updatequery += " .\n".join(
-            [f"\t\t{s.n3()} {p.n3()} {o.n3()}" for (s, p, o) in triples_batch]
+            [f"\t\t{_n3(s)} {_n3(p)} {_n3(o)}" for (s, p, o) in triples_batch]
         )
         updatequery += f" . \n\t }}\n}}\n"
 

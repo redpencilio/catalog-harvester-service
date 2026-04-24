@@ -1,3 +1,4 @@
+from sudo_query import update_sudo
 from string import Template
 from context_query import use_mu_headers
 from dataclasses import dataclass
@@ -33,6 +34,7 @@ def run_task(task):
         if isinstance(results, TaskSuccess):
             results = results.results
         elif isinstance(results, TaskReschedule):
+            attach_task_results_container(task, results)
             task.update_status(TaskStatus.SCHEDULED)
             return
 
@@ -64,7 +66,7 @@ def run_tasks():
                 f"Problem while running task {actionable_task.uri}, operation {actionable_task.operation}"
             )
 
-def attach_task_results_container(task, results, graph=MU_APPLICATION_GRAPH):
+def attach_task_results_container(task, results, graph=TASKS_GRAPH):
     container_uuid = generate_uuid()
     container_uri = CONTAINER_URI_PREFIX + container_uuid
 
@@ -96,7 +98,7 @@ WHERE {
         container=sparql_escape_uri(container_uri),
         results=", ".join([sparql_escape_uri(result) for result in listize(results)])
     )
-    return container_query_string
+    update_sudo(container_query_string)
 
 class TaskResult:
     pass

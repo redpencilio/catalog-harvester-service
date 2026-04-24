@@ -3,7 +3,7 @@ from task_runner import TaskSuccess, TaskReschedule, TaskResult
 from catalog_endpoint import get_catalog_endpoint, get_catalog_endpoint_by_query, CatalogEndpoint
 from context_query import get_mu_headers
 import rdflib
-from helpers import generate_uuid
+from helpers import generate_uuid, log
 from escape_helpers import sparql_escape_uri
 from utils import store_graph
 import task_runner
@@ -13,6 +13,8 @@ from dcat_validation_request import DCATValidationRequest, get_dcat_validation_r
 from constants import SHACL_VALIDATION_OPERATION, SHACL_VALIDATION_JOB_OPERATION, CATALOG_HARVEST_OPERATION, PYSHACL_SYSTEM_TRIPLES, MOBILITY_DCAT_VALIDATION_TASK_OPERATION
 
 def run_mobility_dcat_validation_task(task):
+    endpoint_url = task.input
+
     catalog_endpoint = CatalogEndpoint(
         first_url=endpoint_url,
         current_url=endpoint_url
@@ -25,7 +27,7 @@ def run_mobility_dcat_validation_task(task):
     dcat_validation_request.insert()
     catalog_endpoint.insert()
 
-    return dcat_validation_request.uri
+    return TaskSuccess(dcat_validation_request.uri)
 task_runner.register(MOBILITY_DCAT_VALIDATION_TASK_OPERATION, run_mobility_dcat_validation_task)
 
 def run_catalog_harvesting_task(task) -> TaskResult:
@@ -38,6 +40,7 @@ def run_catalog_harvesting_task(task) -> TaskResult:
     if not catalog_endpoint.current_url:
         return TaskSuccess(dcat_validation_request_uri)
 
+    log(f"Harvesting '{catalog_endpoint.current_url}'...")
     data_graph = rdflib.Graph()
     data_graph.parse(catalog_endpoint.current_url)
 
