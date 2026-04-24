@@ -4,7 +4,7 @@ from pyshacl.consts import (
     OWL_DatatypeProperty, RDF_Property
  )
 
-GRAPH_LOAD_BATCH_SIZE = 1 #00
+GRAPH_LOAD_BATCH_SIZE = 100
 
 MU_APPLICATION_GRAPH = os.environ.get("MU_APPLICATION_GRAPH", "http://mu.semte.ch/graphs/public")
 MU_SPARQL_ENDPOINT = os.environ.get("MU_SPARQL_ENDPOINT")

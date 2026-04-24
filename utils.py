@@ -1,3 +1,4 @@
+import json
 from itertools import islice
 from string import Template
 from constants import GRAPH_LOAD_BATCH_SIZE
@@ -33,10 +34,12 @@ def _n3(term):
                 datatype=rdflib.namespace.XSD.string
             ).n3()
         elif term.language:
-            print(f"{term.value=}")
-            print(f"{term.n3()=}")
-            print(f"{term.normalize()=}")
-            return sparql_escape_string(term.value)
+            # Use JSON-parse to remove any weirdness for sparql-parser
+            s = term.value
+            print(f"{s=}")
+            return rdflib.Literal(
+                s, lang=term.language
+            ).n3().replace('\\u','\\\\u')
 
     return term.n3()
 
