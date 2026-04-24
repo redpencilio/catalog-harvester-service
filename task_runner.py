@@ -34,7 +34,7 @@ def run_task(task):
         if isinstance(results, TaskSuccess):
             results = results.results
         elif isinstance(results, TaskReschedule):
-            attach_task_results_container(task, results)
+            # attach_task_results_container(task, task.input)
             task.update_status(TaskStatus.SCHEDULED)
             return
 
