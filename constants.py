@@ -18,6 +18,8 @@ CONTAINER_URI_PREFIX = "http://redpencil.data.gift/id/container/"
 
 DCAT_VALIDATION_REQUEST_URI_PREFIX = "http://mu.semte.ch/vocabularies/ext/dcat-validation-request/"
 
+CATALOG_ENDPOINT_URI_PREFIX = "http://mu.semte.ch/vocabularies/ext/catalog-endpoint/"
+
 CATALOG_HARVEST_INPUT_URI_PREFIX = "http://mu.semte.ch/vocabularies/ext/catalog-harvest-input/"
 CATALOG_HARVEST_JOB_OPERATION = "http://lblod.data.gift/id/jobs/concept/JobOperation/catalog-harvest-job"
 CATALOG_HARVEST_OPERATION = "http://mu.semte.ch/vocabularies/ext/CatalogHarvestJob"

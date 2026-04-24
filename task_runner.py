@@ -1,3 +1,6 @@
+from context_query import use_mu_headers
+from dataclasses import dataclass
+from typing import Any
 from utils import listize
 import traceback
 from helpers import logger
@@ -24,7 +27,14 @@ def run_task(task):
                 results = runner(task)
         else:
             results = runner(task)
-        print(result)
+
+        if isinstance(results, TaskSuccess):
+            results = results.results
+        elif isinstance(results, TaskReschedule):
+            task.update_status(TaskStatus.SCHEDULED)
+            return
+
+        attach_task_results_container(task, results)
         task.update_status(TaskStatus.SUCCESS)
     except Exception as e:
         print(f"Failed to run task <{task.uri}> with operation <{task.operation}>:")
@@ -78,9 +88,19 @@ WHERE {
 }""")
     container_query_string = container_query_template.substitute(
         graph=sparql_escape_uri(graph) if graph else "?g",
-        task=sparql_escape_uri(task),
+        task=sparql_escape_uri(task.uri),
         container_uuid=sparql_escape_string(container_uuid),
         container=sparql_escape_uri(container_uri),
         results=", ".join([sparql_escape_uri(result) for result in listize(results)])
     )
     return container_query_string
+
+class TaskResult:
+    pass
+
+@dataclass
+class TaskSuccess(TaskResult):
+    results: Any
+
+class TaskReschedule(TaskResult):
+    pass

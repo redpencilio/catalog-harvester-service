@@ -5,7 +5,8 @@ from typing import Optional
 from typing import List
 from enum import Enum
 
-from helpers import query, update, generate_uuid
+from helpers import generate_uuid
+from context_query import query, update
 from escape_helpers import sparql_escape_uri, sparql_escape_datetime, sparql_escape_string
 
 from utils import from_binding
@@ -13,8 +14,8 @@ from constants import DATA_GRAPH, DCAT_VALIDATION_REQUEST_URI_PREFIX
 
 @dataclass
 class DCATValidationRequest():
+    catalog_endpoint_uri: str
     shacl_urls: List[str]
-    data_urls: List[str]
     shacl_graph: str = None
     data_graph: str = None
 
@@ -31,8 +32,6 @@ class DCATValidationRequest():
             self.uri = DCAT_VALIDATION_REQUEST_URI_PREFIX + self.id
         if not self.shacl_graph:
             self.shacl_graph = f"{self.uri}/shacl-graph/{generate_uuid()}"
-        if not self.data_graph:
-            self.data_graph = f"{self.uri}/data-graph/{generate_uuid()}"
 
     def insert(self, graph=DATA_GRAPH):
         query_template = Template("""
@@ -46,8 +45,8 @@ INSERT DATA {
             mu:uuid $uuid ;
             dct:created $created ;
             dct:modified $modified ;
+            ext:endpoint $catalog_endpoint ;
             $shacl_urls
-            $data_urls
             $shacl_graph
             $data_graph
     }
@@ -59,10 +58,6 @@ INSERT DATA {
         shacl_urls = "\n".join(
             f"ext:shaclURL {sparql_escape_string(shacl_url)} ;"
             for shacl_url in self.shacl_urls
-        )
-        data_urls = "\n".join(
-            f"ext:dataURL {sparql_escape_string(data_url)} ;"
-            for data_url in self.data_urls
         )
 
         shacl_graph = f"ext:shaclGraph {sparql_escape_uri(self.shacl_graph)} ;" \
@@ -76,10 +71,10 @@ INSERT DATA {
             uuid=sparql_escape_string(self.id),
             created=sparql_escape_datetime(self.created),
             modified=sparql_escape_datetime(self.modified),
+            catalog_endpoint=sparql_escape_uri(self.catalog_endpoint_uri),
             shacl_graph=shacl_graph,
             data_graph=data_graph,
             shacl_urls=shacl_urls,
-            data_urls=data_urls
         )
 
         update(query_string)
@@ -92,13 +87,14 @@ PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
 PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 PREFIX dct: <http://purl.org/dc/terms/>
 
-SELECT ?id ?uri ?created ?modified ?shacl_graph ?data_graph WHERE {
+SELECT ?id ?uri ?created ?modified ?catalog_endpoint_uri ?shacl_graph ?data_graph WHERE {
     GRAPH $graph {
         VALUES ?uri { $uri } .
         ?uri a ext:DCATValidationRequest ;
             mu:uuid ?id ;
             dct:created ?created ;
             dct:modified ?modified ;
+            ext:endpoint ?catalog_endpoint_uri ;
             ext:shaclGraph ?shacl_graph ;
             ext:dataGraph ?data_graph .
     }
@@ -121,7 +117,6 @@ LIMIT 1
         DCATValidationRequest, binding,
         extra=dict(
             shacl_urls=get_shacl_urls(uri),
-            data_urls=get_data_urls(uri)
         )
     )
 
@@ -150,26 +145,21 @@ SELECT ?shacl_url WHERE {
         for binding in query_res["results"]["bindings"]
     ]
 
-def get_data_urls(uri, graph=DATA_GRAPH) -> List[str]:
+def attach_data_graph(uri, data_graph_uri, graph=DATA_GRAPH):
     query_template = Template("""
 PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 
-SELECT ?data_url WHERE {
+INSERT {
     GRAPH $graph {
-        $uri a ext:DCATValidationRequest ;
-            ext:dataURL ?data_url .
+        $uri ext:dataGraph $data_graph .
     }
+} WHERE {
+    $uri a ext:DCATValidationRequest .
 }
     """)
-
     query_string = query_template.substitute(
-        graph=sparql_escape_uri(graph) if graph else "?g",
-        uri=sparql_escape_uri(uri)
+        graph=sparql_escape_uri(graph),
+        uri=sparql_escape_uri(uri),
+        data_graph=sparql_escape_uri(data_graph_uri)
     )
-
-    query_res = query(query_string)
-    return [
-        binding["data_url"]["value"]
-        for binding in query_res["results"]["bindings"]
-    ]
-
+    update(query_string)

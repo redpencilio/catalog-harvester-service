@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from string import Template
 import datetime
 from typing import Optional
@@ -25,7 +25,8 @@ class Task:
     input: str
     operation: str
     job_operation: str
-    headers: Optional[dict[str,str]] = None
+    # headers: Optional[dict[str,str]]
+    headers: Optional[dict]  = None
 
     uri: str = None
     id: str = None
@@ -90,7 +91,7 @@ INSERT DATA {
         job_uuid = generate_uuid()
         job_uri = JOB_URI_PREFIX + job_uuid
         updated= datetime.datetime.now()
-        query = query_template.substitute(
+        query_string = query_template.substitute(
             graph=sparql_escape_uri(graph),
             container_uri=sparql_escape_uri(container_uri),
             job_uri=sparql_escape_uri(job_uri),
@@ -106,7 +107,8 @@ INSERT DATA {
             headers=headers
         )
 
-        return update_sudo(query)
+        print(query_string)
+        return update_sudo(query_string)
 
 
     def update_status(self, status: TaskStatus, graph=TASKS_GRAPH):

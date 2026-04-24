@@ -2,7 +2,7 @@ from itertools import islice
 from string import Template
 from constants import GRAPH_LOAD_BATCH_SIZE
 from escape_helpers import sparql_escape_uri
-from helpers import query, update
+from sudo_query import query_sudo, update_sudo
 import rdflib
 import dataclasses
 
@@ -38,7 +38,7 @@ def store_graph(g: rdflib.Graph, graph_name: str):
         )
         updatequery += f" . \n\t }}\n}}\n"
 
-        update(updatequery)
+        update_sudo(updatequery)
 
 
 # dump_graph_query_template = Template("""
