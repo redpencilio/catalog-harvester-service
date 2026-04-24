@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 from utils import listize
 import traceback
-from helpers import logger
+from helpers import logger, log
 from escape_helpers import sparql_escape_uri, sparql_escape_string
 
 from constants import TASKS_GRAPH, CONTAINER_URI_PREFIX, MU_APPLICATION_GRAPH
@@ -22,6 +22,7 @@ def run_task(task):
 
     try:
         task.update_status(TaskStatus.BUSY)
+        log(f"Running task <{task.uri}> with operation <{task.operation}>")
         if task.headers:
             with use_mu_headers(task.headers):
                 results = runner(task)
@@ -35,9 +36,10 @@ def run_task(task):
             return
 
         attach_task_results_container(task, results)
+        log(f"Completed task <{task.uri}> with operation <{task.operation}>")
         task.update_status(TaskStatus.SUCCESS)
     except Exception as e:
-        print(f"Failed to run task <{task.uri}> with operation <{task.operation}>:")
+        log(f"Failed to run task <{task.uri}> with operation <{task.operation}>:")
         traceback.print_exc()
         task.update_status(TaskStatus.FAILED)
 

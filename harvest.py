@@ -1,6 +1,6 @@
 import dcat_validation_request
 from task_runner import TaskSuccess, TaskReschedule, TaskResult
-from catalog_endpoint import get_catalog_endpoint, get_catalog_endpoint_by_query
+from catalog_endpoint import get_catalog_endpoint, get_catalog_endpoint_by_query, CatalogEndpoint
 from context_query import get_mu_headers
 import rdflib
 from helpers import generate_uuid
@@ -10,7 +10,23 @@ import task_runner
 from task import Task
 from dcat_validation_request import DCATValidationRequest, get_dcat_validation_request
 
-from constants import SHACL_VALIDATION_OPERATION, SHACL_VALIDATION_JOB_OPERATION, CATALOG_HARVEST_OPERATION, PYSHACL_SYSTEM_TRIPLES
+from constants import SHACL_VALIDATION_OPERATION, SHACL_VALIDATION_JOB_OPERATION, CATALOG_HARVEST_OPERATION, PYSHACL_SYSTEM_TRIPLES, MOBILITY_DCAT_VALIDATION_TASK_OPERATION
+
+def run_mobility_dcat_validation_task(endpoint_url):
+    catalog_endpoint = CatalogEndpoint(
+        first_url=endpoint_url,
+        current_url=endpoint_url
+    )
+
+    dcat_validation_request = DCATValidationRequest(
+        catalog_endpoint.uri
+    )
+
+    dcat_validation_request.insert()
+    catalog_endpoint.insert()
+
+    return dcat_validation_request.uri
+task_runner.register(MOBILITY_DCAT_VALIDATION_TASK_OPERATION, run_mobility_dcat_validation_task)
 
 def run_catalog_harvesting_task(dcat_validation_request_uri) -> TaskResult:
 
@@ -72,15 +88,6 @@ WHERE {
             uri=dcat_validation_request_uri,
             data_graph_uri=catalog_endpoint.destination_graph
         )
-        task = Task(
-            input=dcat_validation_request_uri,
-            operation=SHACL_VALIDATION_OPERATION,
-            job_operation=SHACL_VALIDATION_JOB_OPERATION,
-            headers=get_mu_headers()
-        )
-
-        task.insert()
-
         return TaskSuccess(dcat_validation_request_uri)
 
 task_runner.register(CATALOG_HARVEST_OPERATION, run_catalog_harvesting_task)

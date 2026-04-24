@@ -15,8 +15,8 @@ from constants import DATA_GRAPH, DCAT_VALIDATION_REQUEST_URI_PREFIX
 @dataclass
 class DCATValidationRequest():
     catalog_endpoint_uri: str
-    shacl_urls: List[str]
-    shacl_graph: str = None
+    # shacl_urls: List[str]
+    # shacl_graph: str = None
     data_graph: str = None
 
     uri: str = None
@@ -30,8 +30,8 @@ class DCATValidationRequest():
             self.id = generate_uuid()
         if not self.uri:
             self.uri = DCAT_VALIDATION_REQUEST_URI_PREFIX + self.id
-        if not self.shacl_graph:
-            self.shacl_graph = f"{self.uri}/shacl-graph/{generate_uuid()}"
+        # if not self.shacl_graph:
+        #     self.shacl_graph = f"{self.uri}/shacl-graph/{generate_uuid()}"
 
     def insert(self, graph=DATA_GRAPH):
         query_template = Template("""
@@ -46,8 +46,8 @@ INSERT DATA {
             dct:created $created ;
             dct:modified $modified ;
             ext:endpoint $catalog_endpoint ;
-            $shacl_urls
-            $shacl_graph
+            #shacl_urls
+            #shacl_graph
             $data_graph
     }
 }
@@ -55,13 +55,13 @@ INSERT DATA {
 
         self.modified = datetime.datetime.now()
 
-        shacl_urls = "\n".join(
-            f"ext:shaclURL {sparql_escape_string(shacl_url)} ;"
-            for shacl_url in self.shacl_urls
-        )
+        # shacl_urls = "\n".join(
+        #     f"ext:shaclURL {sparql_escape_string(shacl_url)} ;"
+        #     for shacl_url in self.shacl_urls
+        # )
 
-        shacl_graph = f"ext:shaclGraph {sparql_escape_uri(self.shacl_graph)} ;" \
-            if self.shacl_graph else "# no ext:shaclGraph"
+        # shacl_graph = f"ext:shaclGraph {sparql_escape_uri(self.shacl_graph)} ;" \
+        #     if self.shacl_graph else "# no ext:shaclGraph"
         data_graph = f"ext:dataGraph {sparql_escape_uri(self.data_graph)} ;" \
             if self.data_graph else "# no ext:dataGraph"
 
@@ -72,9 +72,9 @@ INSERT DATA {
             created=sparql_escape_datetime(self.created),
             modified=sparql_escape_datetime(self.modified),
             catalog_endpoint=sparql_escape_uri(self.catalog_endpoint_uri),
-            shacl_graph=shacl_graph,
+            # shacl_graph=shacl_graph,
             data_graph=data_graph,
-            shacl_urls=shacl_urls,
+            # shacl_urls=shacl_urls,
         )
 
         update(query_string)
@@ -87,7 +87,7 @@ PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
 PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 PREFIX dct: <http://purl.org/dc/terms/>
 
-SELECT ?id ?uri ?created ?modified ?catalog_endpoint_uri ?shacl_graph ?data_graph WHERE {
+SELECT ?id ?uri ?created ?modified ?catalog_endpoint_uri ?data_graph WHERE {
     GRAPH $graph {
         VALUES ?uri { $uri } .
         ?uri a ext:DCATValidationRequest ;
@@ -95,7 +95,7 @@ SELECT ?id ?uri ?created ?modified ?catalog_endpoint_uri ?shacl_graph ?data_grap
             dct:created ?created ;
             dct:modified ?modified ;
             ext:endpoint ?catalog_endpoint_uri ;
-            ext:shaclGraph ?shacl_graph ;
+            # ext:shaclGraph ?shacl_graph ;
             ext:dataGraph ?data_graph .
     }
 }
@@ -116,34 +116,34 @@ LIMIT 1
     dcat_validation_request = from_binding(
         DCATValidationRequest, binding,
         extra=dict(
-            shacl_urls=get_shacl_urls(uri),
+            # shacl_urls=get_shacl_urls(uri),
         )
     )
 
     return dcat_validation_request
 
-def get_shacl_urls(uri, graph=DATA_GRAPH) -> List[str]:
-    query_template = Template("""
-PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+# def get_shacl_urls(uri, graph=DATA_GRAPH) -> List[str]:
+#     query_template = Template("""
+# PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 
-SELECT ?shacl_url WHERE {
-    GRAPH $graph {
-        $uri a ext:DCATValidationRequest ;
-            ext:shaclURL ?shacl_url .
-    }
-}
-    """)
+# SELECT ?shacl_url WHERE {
+#     GRAPH $graph {
+#         $uri a ext:DCATValidationRequest ;
+#             ext:shaclURL ?shacl_url .
+#     }
+# }
+#     """)
 
-    query_string = query_template.substitute(
-        graph=sparql_escape_uri(graph) if graph else "?g",
-        uri=sparql_escape_uri(uri)
-    )
+#     query_string = query_template.substitute(
+#         graph=sparql_escape_uri(graph) if graph else "?g",
+#         uri=sparql_escape_uri(uri)
+#     )
 
-    query_res = query(query_string)
-    return [
-        binding["shacl_url"]["value"]
-        for binding in query_res["results"]["bindings"]
-    ]
+#     query_res = query(query_string)
+#     return [
+#         binding["shacl_url"]["value"]
+#         for binding in query_res["results"]["bindings"]
+#     ]
 
 def attach_data_graph(uri, data_graph_uri, graph=DATA_GRAPH):
     query_template = Template("""

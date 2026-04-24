@@ -4,6 +4,7 @@ from catalog_endpoint import CatalogEndpoint
 from flask import request
 from dcat_validation_request import DCATValidationRequest
 import rdflib
+import harvest
 
 # SAMPLE_SHACL = "https://raw.githubusercontent.com/mobilityDCAT-AP/mobilityDCAT-AP/refs/heads/gh-pages/releases/1.1.0/shaclShapes/mobilitydcat-ap_shacl_shapes.ttl"
 SAMPLE_SHACL = [
