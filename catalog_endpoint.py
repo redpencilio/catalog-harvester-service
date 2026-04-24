@@ -7,7 +7,8 @@ from dataclasses import dataclass, field
 import rdflib
 
 from helpers import generate_uuid
-from context_query import query, update
+# from context_query import query, update
+from sudo_query import query_sudo as query, update_sudo as update
 from escape_helpers import sparql_escape_uri, sparql_escape_datetime, sparql_escape_string
 
 @dataclass

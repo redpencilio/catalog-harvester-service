@@ -1,9 +1,10 @@
+from string import Template
 from context_query import use_mu_headers
 from dataclasses import dataclass
 from typing import Any
 from utils import listize
 import traceback
-from helpers import logger, log
+from helpers import logger, log, generate_uuid
 from escape_helpers import sparql_escape_uri, sparql_escape_string
 
 from constants import TASKS_GRAPH, CONTAINER_URI_PREFIX, MU_APPLICATION_GRAPH

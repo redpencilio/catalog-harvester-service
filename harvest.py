@@ -12,7 +12,7 @@ from dcat_validation_request import DCATValidationRequest, get_dcat_validation_r
 
 from constants import SHACL_VALIDATION_OPERATION, SHACL_VALIDATION_JOB_OPERATION, CATALOG_HARVEST_OPERATION, PYSHACL_SYSTEM_TRIPLES, MOBILITY_DCAT_VALIDATION_TASK_OPERATION
 
-def run_mobility_dcat_validation_task(endpoint_url):
+def run_mobility_dcat_validation_task(task):
     catalog_endpoint = CatalogEndpoint(
         first_url=endpoint_url,
         current_url=endpoint_url
@@ -28,7 +28,8 @@ def run_mobility_dcat_validation_task(endpoint_url):
     return dcat_validation_request.uri
 task_runner.register(MOBILITY_DCAT_VALIDATION_TASK_OPERATION, run_mobility_dcat_validation_task)
 
-def run_catalog_harvesting_task(dcat_validation_request_uri) -> TaskResult:
+def run_catalog_harvesting_task(task) -> TaskResult:
+    dcat_validation_request_uri = task.input
 
     catalog_endpoint = get_catalog_endpoint_by_query(
         f"{sparql_escape_uri(dcat_validation_request_uri)} ext:endpoint ?uri ."

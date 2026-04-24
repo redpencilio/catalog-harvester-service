@@ -19,7 +19,7 @@ authSparqlUpdate.addCustomHttpHeader("mu-auth-sudo", "true")
 def query_sudo(the_query):
     """Execute the given SPARQL query (select/ask/construct)on the triple store and returns
     the results in the given returnFormat (JSON by default)."""
-    logger.debug("execute query: \n" + the_query)
+    logger.info("execute query: \n" + the_query)
     sparqlQuery.setQuery(the_query)
     try:
         return sparqlQuery.query().convert()
@@ -37,7 +37,7 @@ def update_sudo(the_query, attempt=0, max_retries=5):
         try:
             start = time.time()
             logger.debug(f"started query at {datetime.datetime.now()}")
-            logger.debug("execute query: \n" + the_query)
+            logger.info("execute query: \n" + the_query)
 
             sparqlUpdate.query()
 
