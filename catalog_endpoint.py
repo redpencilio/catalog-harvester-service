@@ -10,6 +10,7 @@ from helpers import generate_uuid
 # from context_query import query, update
 from sudo_query import query_sudo as query, update_sudo as update
 from escape_helpers import sparql_escape_uri, sparql_escape_datetime, sparql_escape_string
+from custom_exceptions import ResourceNotFoundError
 
 @dataclass
 class CatalogEndpoint():
@@ -140,7 +141,7 @@ LIMIT 1
     query_res = query(query_string)
     bindings = query_res["results"]["bindings"]
     if not bindings:
-        raise Exception(f"Catalog Endpoint description not found: <{uri_query}>")
+        raise ResourceNotFoundError(f"Catalog Endpoint description not found: <{uri_query}>")
 
     binding = bindings[0]
     catalog_endpoint = from_binding(
