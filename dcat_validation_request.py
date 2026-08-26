@@ -12,6 +12,7 @@ from escape_helpers import sparql_escape_uri, sparql_escape_datetime, sparql_esc
 
 from utils import from_binding
 from constants import DATA_GRAPH, DCAT_VALIDATION_REQUEST_URI_PREFIX
+from custom_exceptions import ResourceNotFoundError
 
 @dataclass
 class DCATValidationRequest():
@@ -111,7 +112,7 @@ LIMIT 1
     query_res = query(query_string)
     bindings = query_res["results"]["bindings"]
     if not bindings:
-        raise Exception(f"Validation request not found: <{uri}>")
+        raise ResourceNotFoundError(f"Validation request not found: <{uri}>")
 
     binding = bindings[0]
     dcat_validation_request = from_binding(
