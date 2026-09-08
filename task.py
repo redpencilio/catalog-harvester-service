@@ -109,6 +109,27 @@ INSERT DATA {
         print(query_string)
         return update_sudo(query_string)
 
+    def store_comment(self, comment: str, graph=TASKS_GRAPH):
+        update_sudo(f"""
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
+            PREFIX task: <http://redpencil.data.gift/vocabularies/tasks/>
+            PREFIX dct: <http://purl.org/dc/terms/>
+
+            INSERT {{
+                GRAPH {sparql_escape_uri(graph)} {{
+                    ?job skos:comment {sparql_escape_string(comment)};
+                }}
+            }}
+            WHERE {{
+                GRAPH {sparql_escape_uri(graph)} {{
+                    {sparql_escape_uri(self.uri)} dct:isPartOf ?job.
+                }}
+            }}
+        """)
+
+
+
 
     def store_error(self, message: str, graph=TASKS_GRAPH):
         error_uuid = generate_uuid()

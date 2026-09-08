@@ -45,6 +45,7 @@ def run_catalog_harvesting_task(task) -> TaskResult:
     try:
         data_graph.parse(catalog_endpoint.current_url)
     except rdflib.plugin.PluginException:
+        task.store_comment("WARNING: change to rdf+xml")
         data_graph.parse(catalog_endpoint.current_url, format="xml")
 
     nexts = data_graph.query("""
