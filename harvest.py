@@ -45,7 +45,10 @@ def run_catalog_harvesting_task(task) -> TaskResult:
     try:
         data_graph.parse(catalog_endpoint.current_url)
     except rdflib.plugin.PluginException:
-        task.store_comment("WARNING: change to rdf+xml")
+        task.store_comment(
+            "This catalog serves data as generic XML instead of application/rdf+xml, "
+            "which other RDF tools may not read — consider fixing the content type."
+        )
         data_graph.parse(catalog_endpoint.current_url, format="xml")
 
     nexts = data_graph.query("""
