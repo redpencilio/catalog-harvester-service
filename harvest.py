@@ -42,7 +42,10 @@ def run_catalog_harvesting_task(task) -> TaskResult:
 
     log(f"Harvesting '{catalog_endpoint.current_url}'...")
     data_graph = rdflib.Graph()
-    data_graph.parse(catalog_endpoint.current_url)
+    try:
+        data_graph.parse(catalog_endpoint.current_url)
+    except rdflib.plugin.PluginException:
+        data_graph.parse(catalog_endpoint.current_url, format="xml")
 
     nexts = data_graph.query("""
 PREFIX hydra: <http://www.w3.org/ns/hydra/core#>
