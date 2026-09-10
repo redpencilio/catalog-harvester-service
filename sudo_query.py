@@ -8,17 +8,17 @@ from helpers import logger
 
 sparqlQuery = SPARQLWrapper(os.environ.get("MU_SPARQL_ENDPOINT"), returnFormat=JSON)
 sparqlQuery.addCustomHttpHeader("mu-auth-sudo", "true")
-_query_lock = threading.Lock()
+_query_lock = threading.RLock()
 
 sparqlUpdate = SPARQLWrapper(os.environ.get("MU_SPARQL_UPDATEPOINT"), returnFormat=JSON)
 sparqlUpdate.method = "POST"
 sparqlUpdate.addCustomHttpHeader("mu-auth-sudo", "true")
-_update_lock = threading.Lock()
+_update_lock = threading.RLock()
 
 authSparqlUpdate = SPARQLWrapper(os.environ.get("MU_AUTH_ENDPOINT"), returnFormat=JSON)
 authSparqlUpdate.method = "POST"
 authSparqlUpdate.addCustomHttpHeader("mu-auth-sudo", "true")
-_auth_update_lock = threading.Lock()
+_auth_update_lock = threading.RLock()
 
 
 def query_sudo(the_query):
